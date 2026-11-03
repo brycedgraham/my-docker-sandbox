@@ -1,0 +1,6 @@
+{
+  "name": "OMP Docker Sandbox CLI",
+  "description": "Reusable Docker sandbox environment and cross-platform setup scripts for the omp.sh coding agent harness on remote development servers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

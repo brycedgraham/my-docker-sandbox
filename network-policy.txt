@@ -1,0 +1,79 @@
+# ==============================================================================
+# Docker AI Sandbox & Container Outbound Network Policy
+# ==============================================================================
+# Mode: balanced
+# Default Action: DENY ALL OUTBOUND TRAFFIC EXCEPT EXPLICIT RULES BELOW
+# Documentation: https://docs.docker.com/ai/sandboxes/policies/
+#
+# Rules are evaluated top-to-bottom. Specific allow rules permit outbound TCP/UDP
+# traffic required for the OMP coding harness, package restoration, and local LLMs.
+# ==============================================================================
+
+[PRESET]
+mode=balanced
+default_egress=deny
+
+[ALLOWED_DESTINATIONS]
+
+# ------------------------------------------------------------------------------
+# 1. Local LLM Inference (Unsloth on Host Machine)
+# ------------------------------------------------------------------------------
+# Allows communication with the OpenAI-compatible vLLM/Unsloth endpoint on the host
+host.docker.internal:8000
+127.0.0.1:8000
+172.17.0.1:8000
+10.0.2.2:8000
+
+# ------------------------------------------------------------------------------
+# 2. Package Registries & Development Dependencies
+# ------------------------------------------------------------------------------
+# .NET / NuGet package feeds (.NET 10 SDK restore)
+api.nuget.org:443
+*.nuget.org:443
+azuresearch-usnc.nuget.org:443
+azuresearch-ussc.nuget.org:443
+
+# Node.js / npm registries (OMP sub-agents, LSP servers, language tooling)
+registry.npmjs.org:443
+registry.yarnpkg.com:443
+
+# Python package indexes (pip / uv tools)
+pypi.org:443
+files.pythonhosted.org:443
+pypi.python.org:443
+
+# Rust Crates (Cargo tools)
+crates.io:443
+static.crates.io:443
+
+# ------------------------------------------------------------------------------
+# 3. Source Code Repositories & Tool Distribution
+# ------------------------------------------------------------------------------
+# GitHub git clone, pull, raw files, and API access
+github.com:443
+api.github.com:443
+raw.githubusercontent.com:443
+objects.githubusercontent.com:443
+codeload.github.com:443
+
+# OMP harness updates & documentation
+omp.sh:443
+docs.omp.sh:443
+
+# Microsoft .NET runtime feeds & telemetry opt-out verification
+dot.net:443
+dotnetcli.azureedge.net:443
+
+# ------------------------------------------------------------------------------
+# 4. Optional Remote AI Model Providers (Fallback if not using local Unsloth)
+# ------------------------------------------------------------------------------
+# Kept enabled under the balanced preset for hybrid workflows
+api.openai.com:443
+api.anthropic.com:443
+generativelanguage.googleapis.com:443
+openrouter.ai:443
+api.deepseek.com:443
+
+# ==============================================================================
+# End of network-policy.txt
+# ==============================================================================
