@@ -89,32 +89,13 @@ RUN if id -u ubuntu >/dev/null 2>&1; then \
 RUN mkdir -p /workspace /home/developer/.omp/agent /home/developer/.local/bin && \
     chown -R developer:developer /workspace /home/developer
 
+# Copy verified welcome banner script
+COPY welcome.sh /usr/local/bin/welcome.sh
+RUN chmod +x /usr/local/bin/welcome.sh
+
 # Configure custom bashrc with helper alias and welcome script
 RUN echo 'export PATH="/usr/share/dotnet:/usr/local/bin:~/.local/bin:$PATH"' >> /home/developer/.bashrc && \
     echo 'if [ -f /workspace/AGENTS.md ]; then : ; elif [ -f ~/.omp/agent/AGENTS.md ]; then export OMP_AGENTS_FILE=~/.omp/agent/AGENTS.md; fi' >> /home/developer/.bashrc && \
-    printf '%s\n' \
-      '#!/usr/bin/env bash' \
-      'if [ -t 1 ]; then' \
-      '  echo -e "\033[1;36m"' \
-      '  echo "  ╔════════════════════════════════════════════════════════════╗"' \
-      '  echo "  ║       OMP CODING AGENT DOCKER SANDBOX (Active)             ║"' \
-      '  ╚════════════════════════════════════════════════════════════╝"' \
-      '  echo -e "\033[0m"' \
-      '  echo -e "  Working Directory:  \033[0;32m$(pwd)\033[0m"' \
-      '  echo -e "  .NET SDK Version:   \033[0;32m$(dotnet --version 2>/dev/null || echo \"not found\")\033[0m"' \
-      '  echo -e "  Ripgrep (rg):       \033[0;32m$(rg --version 2>/dev/null | head -n 1 || echo \"installed\")\033[0m"' \
-      '  echo -e "  fd-find (fd):       \033[0;32m$(fd --version 2>/dev/null | head -n 1 || echo \"installed\")\033[0m"' \
-      '  echo -e "  OMP Binary:         \033[0;32m$(command -v omp || echo \"/usr/local/bin/omp\")\033[0m"' \
-      '  echo -e "  Agent Config:       \033[0;34m~/.omp/agent/{models.yml, AGENTS.md}\033[0m"' \
-      '  echo -e "  Local Model Server: \033[0;34m${UNSLOTH_ENDPOINT:-http://host.docker.internal:8000/v1}\033[0m"' \
-      '  echo ""' \
-      '  echo -e "  \033[1;33mQuick Start:\033[0m"' \
-      '  echo -e "    1. Run \033[1;32momp\033[0m to initiate the autonomous coding agent."' \
-      '  echo -e "    2. Use \033[1mrg <query>\033[0m or \033[1mfd <query>\033[0m for fast file searches."' \
-      '  echo -e "    3. Build & test with \033[1mdotnet build\033[0m or \033[1mdotnet test\033[0m."' \
-      '  echo ""' \
-      'fi' > /usr/local/bin/welcome.sh && \
-    chmod +x /usr/local/bin/welcome.sh && \
     echo '/usr/local/bin/welcome.sh' >> /home/developer/.bashrc
 
 # Set working directory to workspace
