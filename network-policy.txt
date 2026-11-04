@@ -19,10 +19,10 @@ default_egress=deny
 # 1. Local LLM Inference (Unsloth on Host Machine)
 # ------------------------------------------------------------------------------
 # Allows communication with the OpenAI-compatible vLLM/Unsloth endpoint on the host
-host.docker.internal:8000
-127.0.0.1:8000
-172.17.0.1:8000
-10.0.2.2:8000
+host.docker.internal:8888
+127.0.0.1:8888
+172.17.0.1:8888
+10.0.2.2:8888
 
 # ------------------------------------------------------------------------------
 # 2. Package Registries & Development Dependencies
@@ -68,11 +68,11 @@ dotnetcli.azureedge.net:443
 # 4. Optional Remote AI Model Providers (Fallback if not using local Unsloth)
 # ------------------------------------------------------------------------------
 # Kept enabled under the balanced preset for hybrid workflows
-api.openai.com:443
-api.anthropic.com:443
-generativelanguage.googleapis.com:443
-openrouter.ai:443
-api.deepseek.com:443
+# api.openai.com:443
+# api.anthropic.com:443
+# generativelanguage.googleapis.com:443
+# openrouter.ai:443
+# api.deepseek.com:443
 
 # ==============================================================================
 # End of network-policy.txt
