@@ -149,6 +149,7 @@ Write-Host "Type " -NoNewline; Write-Host "exit" -ForegroundColor Yellow -NoNewl
 docker run --rm -it `
     --name $Name `
     --hostname "omp-sandbox" `
+    --security-opt="no-new-privileges:true" `
     --add-host="host.docker.internal:host-gateway" `
     -e UNSLOTH_ENDPOINT="http://${HostIp}:${Port}/v1" `
     -e TERM="xterm-256color" `

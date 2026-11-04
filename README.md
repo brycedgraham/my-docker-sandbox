@@ -4,7 +4,7 @@ A reusable, hardened Docker sandbox environment and cross-platform setup automat
 
 ## Features
 
-- **Isolated Sandbox**: MicroVM/Container isolation powered by [Docker AI Sandboxes](https://docs.docker.com/ai/sandboxes/) or standard Docker engine.
+- **Strict Non-Root & Unprivileged Sandbox**: Runs strictly as an unprivileged user (`developer`, UID 1000) with **no sudo/admin rights** and `--security-opt=no-new-privileges:true`. Resolves Ubuntu 24.04's default UID 1000 collision while blocking container escalation.
 - **Calling Directory Workspace Mounting**: Automatically binds whichever workspace directory you execute the script from into `/workspace` inside the sandbox.
 - **Built-in Tooling**:
   - **.NET 10 SDK** (`dotnet`)

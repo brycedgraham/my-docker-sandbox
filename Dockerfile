@@ -34,7 +34,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     build-essential \
     procps \
-    sudo \
     zlib1g \
     libicu-dev \
     locales \
@@ -75,9 +74,16 @@ RUN (curl -fsSL https://omp.sh/install | bash || true) && \
     fi && \
     chmod +x /usr/local/bin/omp 2>/dev/null || true
 
-# Create non-root developer user with UID 1000 and passwordless sudo
-RUN useradd -m -s /bin/bash -u 1000 -G sudo developer && \
-    echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+# Ubuntu 24.04 ships with a default 'ubuntu' user at UID 1000.
+# Safely remove it so we can create an unprivileged 'developer' user (UID 1000)
+# with NO sudo/root permissions, ensuring the AI agent cannot perform privileged operations.
+RUN if id -u ubuntu >/dev/null 2>&1; then \
+        userdel -r ubuntu 2>/dev/null || true; \
+    fi && \
+    if getent group ubuntu >/dev/null 2>&1; then \
+        groupdel ubuntu 2>/dev/null || true; \
+    fi && \
+    useradd -m -s /bin/bash -u 1000 -U developer
 
 # Create workspace directory and user configuration directory
 RUN mkdir -p /workspace /home/developer/.omp/agent /home/developer/.local/bin && \

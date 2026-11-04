@@ -175,6 +175,7 @@ echo -e "${BOLD}${CYAN}---------------------------------------------------------
 docker run --rm -it \
   --name "${CONTAINER_NAME}" \
   --hostname "omp-sandbox" \
+  --security-opt=no-new-privileges:true \
   --add-host="host.docker.internal:host-gateway" \
   -e UNSLOTH_ENDPOINT="http://${HOST_IP}:${UNSLOTH_PORT}/v1" \
   -e TERM="xterm-256color" \

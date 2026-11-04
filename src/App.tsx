@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Terminal, Copy, Check, Shield, Cpu, FolderCode, BookOpen, ExternalLink, ChevronRight } from 'lucide-react';
+import { Terminal, Copy, Check, Shield, Cpu, FolderCode, BookOpen, ExternalLink, ChevronRight, Lock } from 'lucide-react';
 
 interface FileTab {
   id: string;
@@ -50,6 +50,7 @@ docker build -t "\${IMAGE_NAME}" -f "\${DOCKERFILE_PATH}" "\${SCRIPT_DIR}"
 docker run --rm -it \\
   --name "\${CONTAINER_NAME}" \\
   --hostname "omp-sandbox" \\
+  --security-opt=no-new-privileges:true \\
   --add-host="host.docker.internal:host-gateway" \\
   -e UNSLOTH_ENDPOINT="http://host.docker.internal:8000/v1" \\
   -v "\${WORKSPACE_DIR}:/workspace:rw" \\
@@ -81,6 +82,7 @@ $DockerConfig = $ConfigDir -replace '\\\\', '/'
 
 docker run --rm -it \`
     --hostname "omp-sandbox" \`
+    --security-opt="no-new-privileges:true" \`
     --add-host="host.docker.internal:host-gateway" \`
     -e UNSLOTH_ENDPOINT="http://host.docker.internal:\${Port}/v1" \`
     -v "\${DockerWorkspace}:/workspace:rw" \`
@@ -98,9 +100,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV DOTNET_ROOT=/usr/share/dotnet
 ENV PATH="/usr/share/dotnet:/usr/local/bin:/home/developer/.local/bin:\${PATH}"
 
-# Install core build tools, ripgrep (rg), and fd-find (fd)
+# Install core build tools, ripgrep (rg), and fd-find (fd) - NO sudo package installed
 RUN apt-get update && apt-get install -y --no-install-recommends \\
-    ca-certificates curl wget git ripgrep fd-find jq build-essential sudo \\
+    ca-certificates curl wget git ripgrep fd-find jq build-essential procps zlib1g \\
     && rm -rf /var/lib/apt/lists/* && \\
     ln -s /usr/bin/fdfind /usr/local/bin/fd
 
@@ -113,9 +115,11 @@ RUN mkdir -p /usr/share/dotnet && \\
 RUN curl -fsSL https://omp.sh/install | bash && \\
     cp /root/.local/bin/omp /usr/local/bin/omp 2>/dev/null || true
 
-# Non-root developer user with passwordless sudo
-RUN useradd -m -s /bin/bash -u 1000 -G sudo developer && \\
-    echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+# Ubuntu 24.04 includes a default 'ubuntu' user at UID 1000.
+# Remove it and create an unprivileged developer user with NO sudo rights.
+RUN if id -u ubuntu >/dev/null 2>&1; then userdel -r ubuntu 2>/dev/null || true; fi && \\
+    if getent group ubuntu >/dev/null 2>&1; then groupdel ubuntu 2>/dev/null || true; fi && \\
+    useradd -m -s /bin/bash -u 1000 -U developer
 
 WORKDIR /workspace
 USER developer
@@ -291,6 +295,17 @@ export default function App() {
             </div>
           </div>
 
+          {/* Hardened Security Status */}
+          <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-lg p-4 text-xs">
+            <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
+              <Lock className="w-4 h-4" />
+              <span>Hardened Unprivileged Sandbox</span>
+            </div>
+            <p className="text-slate-300 text-[11px] leading-relaxed">
+              Ubuntu 24.04 ships with a default <code className="text-cyan-300">ubuntu</code> user (UID 1000). The Dockerfile cleans this up and provisions an unprivileged <code className="text-cyan-300">developer</code> user with <strong>no sudo permissions</strong> and kernel <code className="text-cyan-300">no-new-privileges</code> restriction.
+            </p>
+          </div>
+
           {/* Capabilities Grid */}
           <div className="bg-slate-900/80 border border-slate-800 rounded-lg p-5 space-y-4">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Environment Specifications</h2>
@@ -309,6 +324,14 @@ export default function App() {
                 <div>
                   <div className="font-medium text-slate-200">Network Egress Filter</div>
                   <div className="text-slate-400 text-[11px]">network-policy.txt balanced rules for NuGet, npm, GitHub & host Unsloth</div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Lock className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                <div>
+                  <div className="font-medium text-slate-200">Unprivileged Agent (No Sudo)</div>
+                  <div className="text-slate-400 text-[11px]">No sudo/admin access; runs as UID 1000 with no-new-privileges flag</div>
                 </div>
               </div>
 
