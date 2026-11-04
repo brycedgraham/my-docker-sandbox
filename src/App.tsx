@@ -121,6 +121,20 @@ RUN if id -u ubuntu >/dev/null 2>&1; then userdel -r ubuntu 2>/dev/null || true;
     if getent group ubuntu >/dev/null 2>&1; then groupdel ubuntu 2>/dev/null || true; fi && \\
     useradd -m -s /bin/bash -u 1000 -U developer
 
+# Custom welcome banner displayed automatically upon opening interactive shell
+RUN printf '%s\\n' \\
+      '#!/usr/bin/env bash' \\
+      'if [ -t 1 ]; then' \\
+      '  echo -e "\\033[1;36m  OMP CODING AGENT DOCKER SANDBOX (Active)\\033[0m"' \\
+      '  echo -e "  .NET SDK: $(dotnet --version 2>/dev/null || echo not found)"' \\
+      '  echo -e "  Ripgrep:  $(rg --version 2>/dev/null | head -n 1 || echo installed)"' \\
+      '  echo -e "  fd-find:  $(fd --version 2>/dev/null | head -n 1 || echo installed)"' \\
+      '  echo -e "  Agent:    ~/.omp/agent/{models.yml, AGENTS.md}"' \\
+      '  echo ""' \\
+      'fi' > /usr/local/bin/welcome.sh && \\
+    chmod +x /usr/local/bin/welcome.sh && \\
+    echo '/usr/local/bin/welcome.sh' >> /home/developer/.bashrc
+
 WORKDIR /workspace
 USER developer
 CMD ["/bin/bash"]`
